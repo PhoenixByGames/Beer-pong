@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pub Golf</title>
+<style>
+:root{
+ --bg:#160e08;--panel:#28170b;--panel2:#3a210d;--line:#80521d;
+ --gold:#f2b233;--cream:#fff5df;--muted:#cdb58d;--green:#78c98b;--red:#dc6b55;
+}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--cream);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding-bottom:82px}
+.app{max-width:760px;margin:auto;padding:16px}.hero{text-align:center;padding:18px 4px 22px;background:linear-gradient(#f2b23312,transparent);border-radius:22px}
+.beer{font-size:42px}.eyebrow{color:var(--gold);font-weight:950;letter-spacing:4px;font-size:12px}h1{font-size:40px;line-height:1;margin:7px 0}.sub{color:var(--muted)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:17px;margin:13px 0;box-shadow:0 12px 28px #0005}.card h2{margin:0 0 14px;font-size:20px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.full{grid-column:1/-1}
+input,select{width:100%;min-height:49px;background:#100a06;border:1px solid var(--line);border-radius:13px;color:var(--cream);padding:10px 12px}
+.btn{min-height:49px;border:1px solid var(--line);border-radius:14px;background:var(--panel2);color:var(--cream);font-weight:950;padding:9px 13px}.primary{background:var(--gold);color:#2b1704;border-color:var(--gold)}.danger{background:#3a1712;border-color:#783b31}.small{min-height:39px;font-size:13px}
+.listRow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #80521d66}.listRow:last-child{border:0}.name{font-weight:950}.muted{color:var(--muted);font-size:13px;margin-top:3px}
+.table{overflow:auto}table{width:100%;min-width:620px;border-collapse:collapse}th,td{text-align:left;padding:10px 8px;border-bottom:1px solid #80521d66}th{font-size:11px;color:var(--muted);text-transform:uppercase}td{font-weight:800}.pos,.total{color:var(--gold);font-weight:950}
+.hole{border:1px solid var(--line);border-radius:18px;padding:13px;margin:9px 0;background:#211207}.holeTop{display:flex;justify-content:space-between;gap:8px;align-items:center}.holeName{font-weight:950;font-size:17px}.par{color:var(--gold);font-weight:900}.scoreGrid{display:grid;grid-template-columns:1fr 70px 45px;gap:8px;align-items:center;margin-top:10px}.scoreInput{min-height:44px}.scoreBtns{display:flex;gap:5px;justify-content:center}.round{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--panel2);color:var(--cream);font-size:20px;font-weight:900}.leader{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid #80521d66}.leader:last-child{border:0}.rank{font-size:23px;color:var(--gold);font-weight:950;width:42px}.nav{position:fixed;z-index:20;left:0;right:0;bottom:0;background:#110a06f5;border-top:1px solid var(--line);padding:8px 8px calc(8px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(4,1fr);gap:5px}.nav button{border:0;background:transparent;color:var(--muted);font-weight:900;padding:6px 2px;border-radius:12px}.nav button.on{color:var(--gold);background:#f2b23312}.icon{display:block;font-size:19px}.hidden{display:none!important}.empty{text-align:center;color:var(--muted);padding:18px}.notice{line-height:1.45;background:#211207;border:1px solid var(--line);border-radius:14px;padding:12px;color:var(--muted);font-size:13px}
+@media(max-width:560px){.grid{grid-template-columns:1fr}.scoreGrid{grid-template-columns:1fr 60px 45px}h1{font-size:35px}}
+
+.nearbyRow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #80521d66}
+.nearbyRow:last-child{border-bottom:0}.nearbyMeta{min-width:0}.nearbyName{font-weight:950}.nearbyInfo{font-size:12px;color:var(--muted);margin-top:3px}
+
+
+.geoResult{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:13px 0;border-bottom:1px solid #80521d66}
+.geoResult:last-child{border-bottom:0}.geoName{font-weight:950}.geoMeta{font-size:12px;color:var(--muted);margin-top:3px}.geoDistance{font-size:12px;color:var(--gold);font-weight:900}
+
+</style>
+</head>
+<body>
+<div class="app">
+<header class="hero"><div class="beer">🍺</div><div class="eyebrow">THE OFFICIAL</div><h1 id="title">PUB GOLF</h1><div id="sub" class="sub">18 holes. One leaderboard. Questionable decisions.</div></header>
+
+<section id="home">
+<div class="card"><h2>🏌️ Start Pub Golf</h2><div class="grid"><input id="event" class="full" placeholder="Event name"><button id="create" class="btn primary full">START PUB GOLF</button></div></div>
+<div class="card"><h2>📋 Your round</h2><div id="summary" class="empty">Set up your players and pubs to get started.</div></div>
+</section>
+
+
+<section id="players" class="hidden">
+<div class="card"><h2>👥 Teams & Players</h2>
+<div class="grid">
+<input id="teamName" class="full" placeholder="Team name">
+<input id="teamP1" placeholder="Player 1">
+<input id="teamP2" placeholder="Player 2 (optional)">
+<button id="addTeam" class="btn primary full" type="button">ADD TEAM</button>
+</div></div>
+<div class="card"><div id="playerList" class="empty">Add your first team.</div></div>
+</section>
+
+
+<section id="pubs" class="hidden">
+
+
+<div class="card">
+  <h2>📍 Find pubs & bars near me</h2>
+  <div class="grid">
+    <button id="useLocation" class="btn primary full" type="button">📍 USE MY LOCATION</button>
+    <input id="placeSearch" class="full" placeholder="Enter a village, town or city">
+    <select id="radius">
+      <option value="1">Within 1 mile</option>
+      <option value="3" selected>Within 3 miles</option>
+      <option value="5">Within 5 miles</option>
+      <option value="10">Within 10 miles</option>
+    </select>
+    <button id="searchPlace" class="btn" type="button">🔎 FIND PUBS</button>
+  </div>
+  <div id="locationStatus" class="notice" style="margin-top:10px">
+    Use your location, or enter a village/town/city. The app will look for pubs and bars in that area.
+  </div>
+  <div id="nearbyList" style="margin-top:10px"></div><div id="directoryCount" class="muted" style="font-size:11px;margin-top:8px"></div><div class="muted" style="font-size:11px;margin-top:8px">Pub directory: Open Pubs dataset (England) • local filtering on your phone.</div>
+</div>
+
+
+<div class="card"><h2>🍻 Pub Course</h2><div class="grid"><input id="pub" placeholder="Pub / hole name"><input id="par" type="number" min="1" value="3" placeholder="Par"><button id="addPub" class="btn primary full">ADD PUB</button></div></div>
+<div class="card"><div id="pubList" class="empty">Add your pubs in order.</div></div>
+</section>
+
+<section id="scores" class="hidden">
+<div class="card"><h2>⛳ Scorecard</h2><div class="notice">Lower score wins. Add penalty points when needed.</div><div id="scorecard"></div></div>
+</section>
+
+<section id="leaderboard" class="hidden">
+<div class="card"><h2>🏆 Live Leaderboard</h2><div id="leaders"></div></div>
+</section>
+
+<section id="settings" class="hidden">
+<div class="card"><h2>⚙️ Pub Golf</h2><button id="reset" class="btn danger">RESET ROUND</button><div class="notice" style="margin-top:12px">This clears the players, pubs and scores saved on this device.</div></div>
+</section>
+</div>
+
+<nav class="nav">
+<button data-p="home" class="on"><span class="icon">🏠</span>Home</button>
+<button data-p="players"><span class="icon">👥</span>Teams</button>
+<button data-p="pubs"><span class="icon">🍻</span>Pubs</button>
+<button data-p="scores"><span class="icon">⛳</span>Scores</button>
+</nav>
+
+<script>
+const KEY="pubGolfV7";
+let s=JSON.parse(localStorage.getItem(KEY)||"null")||{name:"PUB GOLF",teams:[],pubs:[],scores:{}};
+const $=id=>document.getElementById(id);
+const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const LOC="pubGolfDirectoryLocationV8";
+let nearbyResults=[];
+let pubDirectory=null;
+let directoryLoading=null;
+
+function save(){localStorage.setItem(KEY,JSON.stringify(s));render()}
+function page(p){["home","players","pubs","scores","leaderboard","settings"].forEach(x=>$(x).classList.toggle("hidden",x!==p));document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("on",b.dataset.p===p))}
+function total(id){return s.pubs.reduce((n,_,i)=>n+Number(s.scores[id]?.[i]||0),0)}
+function addPub(name,par=3){if(s.pubs.some(p=>p.name.toLowerCase()===name.toLowerCase()))return false;s.pubs.push({id:String(Date.now()+Math.random()),name,par});save();return true}
+function status(msg){$("locationStatus").innerHTML=msg}
+
+function renderNearby(results=[]){
+ nearbyResults=results;
+ const box=$("nearbyList");
+ if(!results.length){box.innerHTML='<div class="empty">No pubs found. Try a larger radius or another village/town/city.</div>';return}
+ box.innerHTML=results.map((p,i)=>{
+   const added=s.pubs.some(x=>x.name.toLowerCase()===p.name.toLowerCase());
+   return `<div class="geoResult"><div style="min-width:0"><div class="geoName">${esc(p.name)}</div><div class="geoMeta">${esc([p.address,p.location,p.local_authority].filter(Boolean).join(" • "))}${p.distance!=null?` • <span class="geoDistance">${p.distance.toFixed(1)} mi</span>`:""}</div></div><button class="btn small ${added?'':'primary'}" type="button" data-near="${i}" ${added?'disabled':''}>${added?'ADDED':'ADD'}</button></div>`
+ }).join("");
+ box.querySelectorAll("[data-near]").forEach(b=>b.onclick=()=>{const p=nearbyResults[+b.dataset.near];if(p)addPub(p.name,3)});
+}
+
+function miles(lat1,lon1,lat2,lon2){
+ const R=3958.7613,r=x=>x*Math.PI/180,dLat=r(lat2-lat1),dLon=r(lon2-lon1);
+ const a=Math.sin(dLat/2)**2+Math.cos(r(lat1))*Math.cos(r(lat2))*Math.sin(dLon/2)**2;
+ return 2*R*Math.asin(Math.sqrt(a));
+}
+
+/*
+ UK-wide directory:
+ GetTheData publishes the Open Pubs dataset with name, address, location,
+ latitude, longitude and local authority. The August 2024 file is open data.
+ We download it once in the browser, parse it locally, and then all filtering
+ happens on-device. This removes the unreliable live Overpass dependency.
+*/
+const PUB_DATA_URL="https://raw.githubusercontent.com/SaneSky109/DATA607/main/Tidyverse/Data/open_pubs.csv";
+
+async function loadPubDirectory(){
+ if(pubDirectory)return pubDirectory;
+ if(directoryLoading)return directoryLoading;
+ directoryLoading=(async()=>{
+   status("📚 <b>Loading pub directory…</b><br><span class=\"muted\">The first load downloads the pub list. After that it can be cached by your phone.</span>");
+   const r=await fetch(PUB_DATA_URL,{mode:"cors",cache:"force-cache"});
+   if(!r.ok)throw new Error("Pub directory download failed: "+r.status);
+   const text=await r.text();
+   if(!text||text.length<1000)throw new Error("Pub directory was empty");
+   pubDirectory=parseCSV(text);
+   if(!pubDirectory.length)throw new Error("No pub records could be read");
+   try{
+     localStorage.setItem("pubGolfDirectoryMeta",JSON.stringify({
+       loaded:Date.now(),count:pubDirectory.length,source:"Open Pubs CSV"
+     }));
+   }catch(e){}
+   return pubDirectory;
+ })().catch(e=>{directoryLoading=null;throw e});
+ return directoryLoading;
+}
+
+function parseCSV(text){
+ const rows=[];let row=[],cell="",quoted=false;
+ for(let i=0;i<text.length;i++){
+   const c=text[i];
+   if(quoted){
+     if(c==='"'&&text[i+1]==='"'){cell+='"';i++}
+     else if(c==='"')quoted=false;
+     else cell+=c;
+   }else{
+     if(c==='"')quoted=true;
+     else if(c===','){row.push(cell);cell=""}
+     else if(c==='\n'){row.push(cell);rows.push(row);row=[];cell=""}
+     else if(c!=='\r')cell+=c;
+   }
+ }
+ if(cell||row.length){row.push(cell);rows.push(row)}
+ if(!rows.length)return[];
+ const head=rows[0].map(x=>x.trim().toLowerCase());
+ const ix=n=>head.indexOf(n);
+ const out=[];
+ for(let i=1;i<rows.length;i++){
+   const r=rows[i],lat=parseFloat(r[ix("latitude")]),lon=parseFloat(r[ix("longitude")]);
+   const name=(r[ix("name")]||"").trim();
+   if(name&&!Number.isNaN(lat)&&!Number.isNaN(lon))
+     out.push({name,address:(r[ix("address")]||"").trim(),location:(r[ix("location")]||"").trim(),local_authority:(r[ix("local_authority")]||"").trim(),lat,lon});
+ }
+ return out;
+}
+
+function resultsNear(lat,lon,radiusMiles,query=""){
+ const q=query.trim().toLowerCase();
+ return pubDirectory
+   .map(p=>({...p,distance:miles(lat,lon,p.lat,p.lon)}))
+   .filter(p=>p.distance<=radiusMiles && (!q||p.name.toLowerCase().includes(q)||p.location.toLowerCase().includes(q)||p.address.toLowerCase().includes(q)||p.local_authority.toLowerCase().includes(q)))
+   .sort((a,b)=>a.distance-b.distance);
+}
+
+async function searchAt(lat,lon,label){
+ const radius=Number($("radius").value||3);
+ try{
+   await loadPubDirectory();
+   const q=$("placeSearch").value.trim();
+   const results=resultsNear(lat,lon,radius,q);
+   localStorage.setItem(LOC,JSON.stringify({lat,lon,label}));
+   if(!results.length){
+     status(`📍 <b>${esc(label)}</b><br><span class="muted">No pubs in the directory within ${radius} miles. Try a larger radius.</span>`);
+     renderNearby([]);
+     return;
+   }
+   renderNearby(results.slice(0,150));
+   status(`📍 <b>${esc(label)}</b><br><span class="muted">Found ${results.length} pubs within ${radius} miles from ${pubDirectory.length.toLocaleString()} loaded pub records.</span>`);
+ }catch(e){
+   console.error(e);
+   status(`⚠️ <b>Couldn't load the UK pub directory.</b><br><span class="muted">Try again, or use a village/town/city search once the directory is available.</span><br><button id="retry" class="btn small" type="button" style="margin-top:8px">TRY AGAIN</button>`);
+   $("retry").onclick=()=>searchAt(lat,lon,label);
+ }
+}
+
+async function useLocation(){
+ if(!navigator.geolocation){status("❌ Location isn't available here. Use a village/town/city.");return}
+ status("📍 <b>Getting your location…</b><br><span class=\"muted\">Allow location access if iPhone asks.</span>");
+ navigator.geolocation.getCurrentPosition(
+  p=>searchAt(p.coords.latitude,p.coords.longitude,"Your current location"),
+  e=>status(`⚠️ <b>Couldn't get your location.</b><br><span class="muted">You can still enter a town or location below.</span>`),
+  {enableHighAccuracy:false,timeout:20000,maximumAge:30000}
+ );
+}
+
+async function geocode(q){
+  const raw=q.trim();
+  if(!raw) throw new Error("Enter a village, town or city");
+  const url="https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=gb&q="+encodeURIComponent(raw);
+  const r=await fetch(url,{cache:"no-store",headers:{"Accept":"application/json"}});
+  if(!r.ok)throw new Error("Location search failed");
+  const d=await r.json();
+  if(!d.length)throw new Error("Village, town or city not found");
+  return {
+    lat:+d[0].lat,
+    lon:+d[0].lon,
+    label:d[0].display_name.split(",").slice(0,3).join(", ")
+  };
+}
+
+$("useLocation").onclick=useLocation;
+$("searchPlace").onclick=async()=>{
+ const q=$("placeSearch").value.trim();if(!q)return;
+ status("🔎 <b>Finding that area…</b>");
+ try{const p=await geocode(q);await searchAt(p.lat,p.lon,p.label)}
+ catch(e){status("❌ Couldn't find that village/town/city. Try Nottingham, Derby or a location such as DE5 3HS.")}
+};
+$("radius").onchange=()=>{
+ const raw=localStorage.getItem(LOC);
+ if(raw){try{const p=JSON.parse(raw);searchAt(p.lat,p.lon,p.label||"Your location")}catch(e){}}
+};
+// Keep the rest of the Pub Golf app unchanged.
+function render(){
+ $("title").textContent=s.name||"PUB GOLF";$("sub").textContent=`${s.teams.length} teams • ${s.pubs.length} pubs`;
+ $("summary").innerHTML=s.teams.length||s.pubs.length?`<b>${esc(s.name)}</b><br><span class="muted">${s.teams.length} teams • ${s.pubs.length} pubs</span>`:"Set up your teams and pubs to get started.";
+ const list=$("playerList");
+ list.innerHTML=s.teams.length?s.teams.map((t,i)=>`<div class="listRow"><div><div class="name">${i+1}. ${esc(t.name)}</div><div class="muted">${esc(t.players.join(" • "))}</div></div><button class="btn small danger" type="button" data-remove-team="${t.id}">REMOVE TEAM</button></div>`).join(""):"Add your first team.";
+ list.querySelectorAll("[data-remove-team]").forEach(b=>b.onclick=()=>{const id=b.dataset.removeTeam;s.teams=s.teams.filter(t=>String(t.id)!==String(id));delete s.scores[id];save()});
+ const pubs=$("pubList");
+ pubs.innerHTML=s.pubs.length?s.pubs.map((p,i)=>`<div class="listRow"><div><div class="name">Hole ${i+1}: ${esc(p.name)}</div><div class="muted">Par ${p.par}</div></div><button class="btn small danger" type="button" data-rb="${p.id}">REMOVE</button></div>`).join(""):"Add your pubs in order.";
+ pubs.querySelectorAll("[data-rb]").forEach(b=>b.onclick=()=>{const idx=s.pubs.findIndex(p=>String(p.id)===String(b.dataset.rb));if(idx<0)return;s.pubs.splice(idx,1);s.teams.forEach(t=>{const old=s.scores[t.id]||{},next={};Object.keys(old).forEach(k=>{const n=+k;if(n<idx)next[n]=old[k];else if(n>idx)next[n-1]=old[k]});s.scores[t.id]=next});save()});
+ renderScores();renderLeaders();
+}
+function renderScores(){
+ const box=$("scorecard");if(!s.teams.length||!s.pubs.length){box.innerHTML='<div class="empty">Add teams and pubs first.</div>';return}
+ box.innerHTML=s.pubs.map((p,i)=>`<div class="hole"><div class="holeTop"><div class="holeName">⛳ ${i+1}. ${esc(p.name)}</div><div class="par">PAR ${p.par}</div></div>${s.teams.map(t=>{const v=+(s.scores[t.id]?.[i]||0);return`<div class="scoreGrid"><div><b>${esc(t.name)}</b><div class="muted">${esc(t.players.join(" • "))}</div></div><input class="scoreInput" type="number" min="0" value="${v}" data-score="${t.id}:${i}"><div class="scoreBtns"><button class="round" type="button" data-minus="${t.id}:${i}">−</button><button class="round" type="button" data-plus="${t.id}:${i}">+</button></div></div>`}).join("")}</div>`).join("");
+ box.querySelectorAll("[data-score]").forEach(x=>x.onchange=()=>{const[id,i]=x.dataset.score.split(":");s.scores[id]=s.scores[id]||{};s.scores[id][i]=Math.max(0,+x.value||0);save()});
+ box.querySelectorAll("[data-plus]").forEach(x=>x.onclick=()=>{const[id,i]=x.dataset.plus.split(":");s.scores[id]=s.scores[id]||{};s.scores[id][i]=+(s.scores[id][i]||0)+1;save()});
+ box.querySelectorAll("[data-minus]").forEach(x=>x.onclick=()=>{const[id,i]=x.dataset.minus.split(":");s.scores[id]=s.scores[id]||{};s.scores[id][i]=Math.max(0,+(s.scores[id][i]||0)-1);save()});
+}
+function renderLeaders(){const rows=[...s.teams].map(t=>({t,total:total(t.id)})).sort((a,b)=>a.total-b.total);$("leaders").innerHTML=rows.length?rows.map((x,i)=>`<div class="leader"><div style="display:flex;align-items:center"><div class="rank">${i+1}</div><div><div class="name">${esc(x.t.name)}</div><div class="muted">${esc(x.t.players.join(" • "))} • ${s.pubs.length} pubs</div></div></div><div class="total">${x.total}</div></div>`).join(""):'<div class="empty">Add teams to see the leaderboard.</div>'}
+$("create").onclick=()=>{const n=$("event").value.trim();if(n)s.name=n;save();page("players")};
+$("addTeam").onclick=()=>{const n=$("teamName").value.trim(),p1=$("teamP1").value.trim(),p2=$("teamP2").value.trim();if(!n||!p1)return alert("Enter a team name and Player 1.");if(s.teams.some(t=>t.name.toLowerCase()===n.toLowerCase()))return alert("That team already exists.");const t={id:String(Date.now()+Math.random()),name:n,players:[p1,...(p2?[p2]:[])]};s.teams.push(t);s.scores[t.id]={};$("teamName").value="";$("teamP1").value="";$("teamP2").value="";save()};
+$("addPub").onclick=()=>{const n=$("pub").value.trim(),p=Math.max(1,+$("par").value||3);if(!n)return alert("Enter a pub name.");addPub(n,p)};
+document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>page(b.dataset.p));
+$("reset").onclick=()=>{if(confirm("Reset the whole Pub Golf round?")){s={name:"PUB GOLF",teams:[],pubs:[],scores:{}};localStorage.removeItem(KEY);save();page("home")}};
+render();
+</script>
+</body></html>
