@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pub Golf</title>
+<style>
+:root{
+ --bg:#160e08;--panel:#28170b;--panel2:#3a210d;--line:#80521d;
+ --gold:#f2b233;--cream:#fff5df;--muted:#cdb58d;--green:#78c98b;--red:#dc6b55;
+}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--cream);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding-bottom:82px}
+.app{max-width:760px;margin:auto;padding:16px}.hero{text-align:center;padding:18px 4px 22px;background:linear-gradient(#f2b23312,transparent);border-radius:22px}
+.beer{font-size:42px}.eyebrow{color:var(--gold);font-weight:950;letter-spacing:4px;font-size:12px}h1{font-size:40px;line-height:1;margin:7px 0}.sub{color:var(--muted)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:17px;margin:13px 0;box-shadow:0 12px 28px #0005}.card h2{margin:0 0 14px;font-size:20px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.full{grid-column:1/-1}
+input,select{width:100%;min-height:49px;background:#100a06;border:1px solid var(--line);border-radius:13px;color:var(--cream);padding:10px 12px}
+.btn{min-height:49px;border:1px solid var(--line);border-radius:14px;background:var(--panel2);color:var(--cream);font-weight:950;padding:9px 13px}.primary{background:var(--gold);color:#2b1704;border-color:var(--gold)}.danger{background:#3a1712;border-color:#783b31}.small{min-height:39px;font-size:13px}
+.listRow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #80521d66}.listRow:last-child{border:0}.name{font-weight:950}.muted{color:var(--muted);font-size:13px;margin-top:3px}
+.table{overflow:auto}table{width:100%;min-width:620px;border-collapse:collapse}th,td{text-align:left;padding:10px 8px;border-bottom:1px solid #80521d66}th{font-size:11px;color:var(--muted);text-transform:uppercase}td{font-weight:800}.pos,.total{color:var(--gold);font-weight:950}
+.hole{border:1px solid var(--line);border-radius:18px;padding:13px;margin:9px 0;background:#211207}.holeTop{display:flex;justify-content:space-between;gap:8px;align-items:center}.holeName{font-weight:950;font-size:17px}.par{color:var(--gold);font-weight:900}.scoreGrid{display:grid;grid-template-columns:1fr 70px 45px;gap:8px;align-items:center;margin-top:10px}.scoreInput{min-height:44px}.scoreBtns{display:flex;gap:5px;justify-content:center}.round{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--panel2);color:var(--cream);font-size:20px;font-weight:900}.leader{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid #80521d66}.leader:last-child{border:0}.rank{font-size:23px;color:var(--gold);font-weight:950;width:42px}.nav{position:fixed;z-index:20;left:0;right:0;bottom:0;background:#110a06f5;border-top:1px solid var(--line);padding:8px 8px calc(8px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(4,1fr);gap:5px}.nav button{border:0;background:transparent;color:var(--muted);font-weight:900;padding:6px 2px;border-radius:12px}.nav button.on{color:var(--gold);background:#f2b23312}.icon{display:block;font-size:19px}.hidden{display:none!important}.empty{text-align:center;color:var(--muted);padding:18px}.notice{background:#211207;border:1px solid var(--line);border-radius:14px;padding:12px;color:var(--muted);font-size:13px}
+@media(max-width:560px){.grid{grid-template-columns:1fr}.scoreGrid{grid-template-columns:1fr 60px 45px}h1{font-size:35px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="hero"><div class="beer">🍺</div><div class="eyebrow">THE OFFICIAL</div><h1 id="title">PUB GOLF</h1><div id="sub" class="sub">18 holes. One leaderboard. Questionable decisions.</div></header>
+
+<section id="home">
+<div class="card"><h2>🏌️ Start Pub Golf</h2><div class="grid"><input id="event" class="full" placeholder="Event name"><button id="create" class="btn primary full">START PUB GOLF</button></div></div>
+<div class="card"><h2>📋 Your round</h2><div id="summary" class="empty">Set up your players and pubs to get started.</div></div>
+</section>
+
+
+<section id="players" class="hidden">
+<div class="card"><h2>👥 Teams & Players</h2>
+<div class="grid">
+<input id="teamName" class="full" placeholder="Team name">
+<input id="teamP1" placeholder="Player 1">
+<input id="teamP2" placeholder="Player 2 (optional)">
+<button id="addTeam" class="btn primary full" type="button">ADD TEAM</button>
+</div></div>
+<div class="card"><div id="playerList" class="empty">Add your first team.</div></div>
+</section>
+
+
+<section id="pubs" class="hidden">
+<div class="card"><h2>🍻 Pub Course</h2><div class="grid"><input id="pub" placeholder="Pub / hole name"><input id="par" type="number" min="1" value="3" placeholder="Par"><button id="addPub" class="btn primary full">ADD PUB</button></div></div>
+<div class="card"><div id="pubList" class="empty">Add your pubs in order.</div></div>
+</section>
+
+<section id="scores" class="hidden">
+<div class="card"><h2>⛳ Scorecard</h2><div class="notice">Lower score wins. Add penalty points when needed.</div><div id="scorecard"></div></div>
+</section>
+
+<section id="leaderboard" class="hidden">
+<div class="card"><h2>🏆 Live Leaderboard</h2><div id="leaders"></div></div>
+</section>
+
+<section id="settings" class="hidden">
+<div class="card"><h2>⚙️ Pub Golf</h2><button id="reset" class="btn danger">RESET ROUND</button><div class="notice" style="margin-top:12px">This clears the players, pubs and scores saved on this device.</div></div>
+</section>
+</div>
+
+<nav class="nav">
+<button data-p="home" class="on"><span class="icon">🏠</span>Home</button>
+<button data-p="players"><span class="icon">👥</span>Teams</button>
+<button data-p="pubs"><span class="icon">🍻</span>Pubs</button>
+<button data-p="scores"><span class="icon">⛳</span>Scores</button>
+</nav>
+
+<script>
+const KEY="pubGolfV2";
+let s=JSON.parse(localStorage.getItem(KEY)||"null")||{name:"PUB GOLF",teams:[],pubs:[],scores:{}};
+const $=id=>document.getElementById(id);
+const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function save(){localStorage.setItem(KEY,JSON.stringify(s));render()}
+function page(p){["home","players","pubs","scores","leaderboard","settings"].forEach(x=>$(x).classList.toggle("hidden",x!==p));document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("on",b.dataset.p===p))}
+function total(id){return s.pubs.reduce((n,_,i)=>n+Number(s.scores[id]?.[i]||0),0)}
+function render(){
+ $("title").textContent=s.name||"PUB GOLF";
+ $("sub").textContent=`${s.teams.length} teams • ${s.pubs.length} pubs`;
+ $("summary").innerHTML=s.teams.length||s.pubs.length?`<b>${esc(s.name)}</b><br><span class="muted">${s.teams.length} teams • ${s.pubs.length} pubs</span>`:"Set up your teams and pubs to get started.";
+
+ const list=$("playerList");
+ if(!s.teams.length){list.className="empty";list.textContent="Add your first team."}
+ else{
+   list.className="";
+   list.innerHTML=s.teams.map((t,i)=>`<div class="listRow"><div><div class="name">${i+1}. ${esc(t.name)}</div><div class="muted">${esc(t.players.join(" • "))}</div></div><button class="btn small danger" type="button" data-remove-team="${t.id}">REMOVE TEAM</button></div>`).join("");
+   list.querySelectorAll("[data-remove-team]").forEach(b=>b.addEventListener("click",()=>{
+     const tid=b.dataset.removeTeam;
+     s.teams=s.teams.filter(t=>String(t.id)!==String(tid));
+     delete s.scores[tid];
+     save();
+   }));
+ }
+
+ const pubs=$("pubList");
+ pubs.innerHTML=s.pubs.length?s.pubs.map((p,i)=>`<div class="listRow"><div><div class="name">Hole ${i+1}: ${esc(p.name)}</div><div class="muted">Par ${p.par}</div></div><button class="btn small danger" type="button" data-rb="${p.id}">REMOVE</button></div>`).join(""):"Add your pubs in order.";
+ pubs.querySelectorAll("[data-rb]").forEach(b=>b.addEventListener("click",()=>{
+   const idx=s.pubs.findIndex(p=>String(p.id)===String(b.dataset.rb));
+   if(idx<0)return;
+   s.pubs.splice(idx,1);
+   // Rebuild each team's score object so removing a pub cannot leave shifted scores.
+   s.teams.forEach(t=>{
+     const old=s.scores[t.id]||{}, next={};
+     Object.keys(old).forEach(k=>{const n=Number(k);if(n<idx)next[n]=old[k];else if(n>idx)next[n-1]=old[k]});
+     s.scores[t.id]=next;
+   });
+   save();
+ }));
+
+ renderScores();
+ renderLeaders();
+}
+function renderScores(){
+ const box=$("scorecard");
+ if(!s.teams.length||!s.pubs.length){box.innerHTML='<div class="empty">Add teams and pubs first.</div>';return}
+ box.innerHTML=s.pubs.map((p,i)=>`<div class="hole"><div class="holeTop"><div class="holeName">⛳ ${i+1}. ${esc(p.name)}</div><div class="par">PAR ${p.par}</div></div>
+ ${s.teams.map(team=>{
+   const v=Number(s.scores[team.id]?.[i]||0);
+   return `<div class="scoreGrid">
+     <div><b>${esc(team.name)}</b><div class="muted">${esc(team.players.join(" • "))}</div></div>
+     <input class="scoreInput" type="number" min="0" value="${v}" data-score="${team.id}:${i}" aria-label="Score for ${esc(team.name)}">
+     <div class="scoreBtns">
+       <button class="round" type="button" data-minus="${team.id}:${i}" aria-label="Take away one">−</button>
+       <button class="round" type="button" data-plus="${team.id}:${i}" aria-label="Add one">+</button>
+     </div>
+   </div>`;
+ }).join("")}</div>`).join("");
+
+ box.querySelectorAll("[data-score]").forEach(inp=>inp.addEventListener("change",()=>{
+   const [id,i]=inp.dataset.score.split(":");
+   s.scores[id]=s.scores[id]||{};
+   s.scores[id][i]=Math.max(0,Number(inp.value)||0);
+   save();
+ }));
+ box.querySelectorAll("[data-plus]").forEach(b=>b.addEventListener("click",()=>{
+   const [id,i]=b.dataset.plus.split(":");
+   s.scores[id]=s.scores[id]||{};
+   s.scores[id][i]=Number(s.scores[id][i]||0)+1;
+   save();
+ }));
+ box.querySelectorAll("[data-minus]").forEach(b=>b.addEventListener("click",()=>{
+   const [id,i]=b.dataset.minus.split(":");
+   s.scores[id]=s.scores[id]||{};
+   s.scores[id][i]=Math.max(0,Number(s.scores[id][i]||0)-1);
+   save();
+ }));
+}
+function renderLeaders(){
+ const rows=[...s.teams].map(t=>({t,total:total(t.id)})).sort((a,b)=>a.total-b.total);
+ $("leaders").innerHTML=rows.length?rows.map((x,i)=>`<div class="leader"><div style="display:flex;align-items:center"><div class="rank">${i+1}</div><div><div class="name">${esc(x.t.name)}</div><div class="muted">${esc(x.t.players.join(" • "))} • ${s.pubs.length} pubs</div></div></div><div class="total">${x.total}</div></div>`).join(""):'<div class="empty">Add teams to see the leaderboard.</div>';
+}
+$("create").addEventListener("click",()=>{let n=$("event").value.trim();if(n)s.name=n;save();page("players")});
+$("addTeam").addEventListener("click",()=>{
+ const n=$("teamName").value.trim(),p1=$("teamP1").value.trim(),p2=$("teamP2").value.trim();
+ if(!n||!p1)return alert("Enter a team name and Player 1.");
+ if(s.teams.some(t=>t.name.toLowerCase()===n.toLowerCase()))return alert("That team already exists.");
+ const team={id:String(Date.now()+Math.random()),name:n,players:[p1,...(p2?[p2]:[])]};
+ s.teams.push(team);s.scores[team.id]={};
+ $("teamName").value="";$("teamP1").value="";$("teamP2").value="";
+ save();
+});
+$("addPub").addEventListener("click",()=>{let n=$("pub").value.trim(),p=Math.max(1,Number($("par").value)||3);if(!n)return alert("Enter a pub name.");s.pubs.push({id:String(Date.now()+Math.random()),name:n,par:p});$("pub").value="";$("par").value=3;save()});
+document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>page(b.dataset.p)));
+$("reset").addEventListener("click",()=>{if(confirm("Reset the whole Pub Golf round?")){s={name:"PUB GOLF",teams:[],pubs:[],scores:{}};localStorage.removeItem(KEY);save();page("home")}});
+render();
+</script>
+</body></html>
