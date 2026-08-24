@@ -1,0 +1,904 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pub Golf</title>
+<style>
+:root{
+ --bg:#160e08;--panel:#28170b;--panel2:#3a210d;--line:#80521d;
+ --gold:#f2b233;--cream:#fff5df;--muted:#cdb58d;--green:#78c98b;--red:#dc6b55;
+}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--cream);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding-bottom:82px}
+.app{max-width:760px;margin:auto;padding:16px}.hero{text-align:center;padding:18px 4px 22px;background:linear-gradient(#f2b23312,transparent);border-radius:22px}
+.beer{font-size:42px}.eyebrow{color:var(--gold);font-weight:950;letter-spacing:4px;font-size:12px}h1{font-size:40px;line-height:1;margin:7px 0}.sub{color:var(--muted)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:17px;margin:13px 0;box-shadow:0 12px 28px #0005}.card h2{margin:0 0 14px;font-size:20px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.full{grid-column:1/-1}
+input,select{width:100%;min-height:49px;background:#100a06;border:1px solid var(--line);border-radius:13px;color:var(--cream);padding:10px 12px}
+.btn{min-height:49px;border:1px solid var(--line);border-radius:14px;background:var(--panel2);color:var(--cream);font-weight:950;padding:9px 13px}.primary{background:var(--gold);color:#2b1704;border-color:var(--gold)}.danger{background:#3a1712;border-color:#783b31}.small{min-height:39px;font-size:13px}
+.listRow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #80521d66}.listRow:last-child{border:0}.name{font-weight:950}.muted{color:var(--muted);font-size:13px;margin-top:3px}
+.table{overflow:auto}table{width:100%;min-width:620px;border-collapse:collapse}th,td{text-align:left;padding:10px 8px;border-bottom:1px solid #80521d66}th{font-size:11px;color:var(--muted);text-transform:uppercase}td{font-weight:800}.pos,.total{color:var(--gold);font-weight:950}
+.hole{border:1px solid var(--line);border-radius:18px;padding:13px;margin:9px 0;background:#211207}.holeTop{display:flex;justify-content:space-between;gap:8px;align-items:center}.holeName{font-weight:950;font-size:17px}.par{color:var(--gold);font-weight:900}.scoreGrid{display:grid;grid-template-columns:1fr 70px 45px;gap:8px;align-items:center;margin-top:10px}.scoreInput{min-height:44px}.scoreBtns{display:flex;gap:5px;justify-content:center}.round{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--panel2);color:var(--cream);font-size:20px;font-weight:900}.leader{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid #80521d66}.leader:last-child{border:0}.rank{font-size:23px;color:var(--gold);font-weight:950;width:42px}.nav{position:fixed;z-index:20;left:0;right:0;bottom:0;background:#110a06f5;border-top:1px solid var(--line);padding:8px 8px calc(8px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(4,1fr);gap:5px}.nav button{border:0;background:transparent;color:var(--muted);font-weight:900;padding:6px 2px;border-radius:12px}.nav button.on{color:var(--gold);background:#f2b23312}.icon{display:block;font-size:19px}.hidden{display:none!important}.empty{text-align:center;color:var(--muted);padding:18px}.notice{line-height:1.45;background:#211207;border:1px solid var(--line);border-radius:14px;padding:12px;color:var(--muted);font-size:13px}
+@media(max-width:560px){.grid{grid-template-columns:1fr}.scoreGrid{grid-template-columns:1fr 60px 45px}h1{font-size:35px}}
+
+.nearbyRow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #80521d66}
+.nearbyRow:last-child{border-bottom:0}.nearbyMeta{min-width:0}.nearbyName{font-weight:950}.nearbyInfo{font-size:12px;color:var(--muted);margin-top:3px}
+
+
+.geoResult{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:13px 0;border-bottom:1px solid #80521d66}
+.geoResult:last-child{border-bottom:0}.geoName{font-weight:950}.geoMeta{font-size:12px;color:var(--muted);margin-top:3px}.geoDistance{font-size:12px;color:var(--gold);font-weight:900}
+
+
+.pub-added{
+  background:linear-gradient(135deg,#58c86b,#2d9d4a)!important;
+  color:#fff!important;
+  border-color:#8bf29a!important;
+  box-shadow:0 4px 0 #17652a, inset 0 3px 5px rgba(255,255,255,.2)!important;
+}
+
+.pubEdit{
+  margin-top:10px;padding:10px;border-radius:14px;
+  background:rgba(0,0,0,.08);border:1px solid rgba(0,0,0,.10);
+}
+.pubEdit label{display:block;font-size:11px;font-weight:900;letter-spacing:.8px;margin-bottom:5px;color:#fff3da}.pubEdit select,.pubEdit input{color:#000}
+.pubEdit select,.pubEdit input{
+  width:100%;min-height:42px;border-radius:10px;border:2px solid rgba(0,0,0,.18);
+  padding:7px 9px;font-size:15px;background:#fff;
+}
+.drinkSelect{margin-bottom:7px}
+.parChoices{display:flex;gap:6px;flex-wrap:wrap}
+.parChoice{
+  flex:1;min-width:40px;min-height:38px;border-radius:10px;border:2px solid rgba(0,0,0,.18);
+  background:#fff;font-weight:900;
+}
+.parChoice.on{background:#4f9b50;color:#fff;border-color:#2f6d34}
+.drinkAdd{margin-top:7px;width:100%;min-height:38px;border:0;border-radius:10px;font-weight:900}
+
+.drinkOnScore{
+  margin-top:5px;
+  color:var(--gold);
+  font-size:13px;
+  font-weight:900;
+  letter-spacing:.2px;
+}
+
+/* Dedicated Add a Pub section */
+.addPubSection{
+  margin:18px 0 26px;
+  border:2px solid rgba(190,125,20,.8);
+  border-radius:22px;
+  background:linear-gradient(180deg,rgba(75,39,15,.72),rgba(42,22,10,.86));
+  overflow:hidden;
+}
+.addPubToggle{
+  width:100%;
+  min-height:64px;
+  border:0;
+  background:linear-gradient(135deg,#f8b92e,#e99a18);
+  color:#17100a;
+  font-size:19px;
+  font-weight:1000;
+  letter-spacing:.4px;
+  padding:14px 18px;
+}
+.addPubPanel{
+  padding:18px;
+}
+.addPubPanel.isHidden{display:none}
+.addPubSection.compact .addPubPanel{display:none}
+
+.pubCourseListHeading{
+  margin:12px 0 12px;
+  font-size:22px;
+  font-weight:1000;
+  letter-spacing:.4px;
+  color:#fff4dc;
+}
+
+/* Dedicated Drinks & Pars editor */
+.pubEdit{display:none!important}
+.holeSettingsSection{
+  margin-top:22px;
+  padding:18px;
+  border:2px solid rgba(190,125,20,.82);
+  border-radius:22px;
+  background:linear-gradient(180deg,rgba(70,36,14,.90),rgba(35,18,9,.96));
+}
+.holeSettingsHeader{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.holeSettingsTitle{font-size:22px;font-weight:1000;color:#fff3da;letter-spacing:.3px}
+.holeSettingsSub{margin-top:4px;font-size:13px;color:#f0dfc2}
+.holeEditor{
+  padding:15px 0;
+  border-top:1px solid rgba(190,125,20,.45);
+}
+.holeEditor:first-child{border-top:0}
+.holeEditorTop{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.holeEditorName{font-weight:1000;font-size:17px;color:#fff3da}
+.holeEditorPar{font-weight:1000;color:#f6b82d}
+.holeEditorGrid{display:grid;grid-template-columns:1fr;gap:9px}
+.holeEditor label{display:block;font-size:11px;font-weight:1000;letter-spacing:.8px;color:#fff3da;margin-bottom:5px}
+.holeEditor select,.holeEditor input{
+  width:100%;min-height:46px;border-radius:12px;border:2px solid rgba(0,0,0,.20);
+  padding:8px 10px;font-size:16px;background:#fff;color:#000;
+}
+.holeEditor .parChoices{display:flex;gap:6px;flex-wrap:wrap}
+.holeEditor .parChoice{
+  flex:1;min-width:42px;min-height:42px;border-radius:11px;border:2px solid rgba(0,0,0,.18);
+  background:#fff;color:#1681e7;font-weight:1000;
+}
+.holeEditor .parChoice.on{background:#55a652;color:#fff;border-color:#2e7130}
+.holeEditor .customDrink{margin-top:7px}
+
+.drinksParsView{display:none}
+.drinksParsView.active{display:block}
+#drinksParsNav.active{background:rgba(247,177,36,.13);color:#f6b82d}
+@media(max-width:600px){
+  #drinksParsNav{font-size:11px}
+  #drinksParsNav span{display:block;line-height:1.05}
+}
+.navHidden{display:none!important}
+
+.holeEditorActions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.removeHoleBtn{
+  min-height:38px;padding:8px 13px;border-radius:11px;border:2px solid #8d4336;
+  background:#3b1b16;color:#fff3da;font-weight:1000;font-size:11px;
+}
+.removeHoleBtn:active{transform:scale(.97)}
+
+.scoreExtras{margin-top:14px;padding:14px;border:2px solid #b87819;border-radius:16px;background:#351c0d}
+.scoreExtras h3{margin:0 0 8px;color:#fff3da;font-size:20px}
+.extraTeam{padding:12px 0;border-top:1px solid #754914}
+.extraTeam:first-child{border-top:0}
+.extraName{font-weight:900;color:#fff3da;margin-bottom:7px}
+.extraBtns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.extraBtns button{min-height:42px;border-radius:10px;border:2px solid #8c5a19;background:#241209;color:#fff3da;font-weight:900}
+.extraValue{color:#f6b82d;font-weight:900}
+.finalRow{display:flex;justify-content:space-between;padding:9px 0;border-top:1px solid #754914;color:#fff3da;font-weight:900}
+
+.memberEdit{margin-top:10px;padding-top:10px;border-top:1px solid rgba(128,82,29,.45)}
+.memberRow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0}
+.memberName{font-weight:850;color:var(--cream)}
+.memberRemove{min-height:34px!important;padding:6px 10px!important;font-size:11px!important}
+.addMemberRow{display:grid;grid-template-columns:1fr auto;gap:7px;margin-top:8px}
+.addMemberRow input{min-height:42px}
+.teamCard{padding:14px;border:1px solid var(--line);border-radius:16px;background:rgba(58,33,13,.5);margin-bottom:10px}
+.teamTitleRow{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.teamTitle{font-weight:1000;font-size:17px}
+.randomInfo{color:var(--muted);font-size:12px}
+
+.teamNameEdit{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:8px}
+.teamNameEdit input{min-height:42px}
+.teamNameEdit .btn{min-height:42px;padding:8px 14px}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="hero"><div class="beer">🍺</div><div class="eyebrow">THE OFFICIAL</div><h1 id="title">PUB GOLF</h1><div id="sub" class="sub">18 holes. One leaderboard. Questionable decisions.</div></header>
+
+<section id="home">
+<div class="card"><h2>🏌️ Start Pub Golf</h2><div class="grid"><input id="event" class="full" placeholder="Event name"><button id="create" class="btn primary full">START PUB GOLF</button></div></div>
+<div class="card"><h2>📋 Your round</h2><div id="summary" class="empty">Set up your players and pubs to get started.</div></div>
+</section>
+
+
+<section id="players" class="hidden">
+<div class="card"><h2>👥 Teams & Players</h2>
+<div class="grid">
+<input id="teamName" class="full" placeholder="Team name">
+<input id="teamP1" placeholder="Player 1">
+<input id="teamP2" placeholder="Player 2 (optional)">
+<button id="addTeam" class="btn primary full" type="button">ADD TEAM</button>
+</div></div>
+
+<div class="card teamTools">
+  <h2>🎲 Team Randomiser</h2>
+  <div class="muted" style="margin-bottom:10px">
+    Mix everyone up into new teams. The current number of teams is selected automatically.
+  </div>
+  <div class="grid">
+    <label class="full" style="font-size:12px;font-weight:900;color:var(--muted)">NUMBER OF TEAMS
+      <select id="randomTeamCount" style="margin-top:6px">
+        <option value="2">2 teams</option>
+        <option value="3">3 teams</option>
+        <option value="4">4 teams</option>
+        <option value="5">5 teams</option>
+        <option value="6">6 teams</option>
+        <option value="7">7 teams</option>
+        <option value="8">8 teams</option>
+        <option value="9">9 teams</option>
+        <option value="10">10 teams</option>
+      </select>
+    </label>
+    <button id="randomiseTeams" class="btn primary full" type="button">🎲 RANDOMISE TEAMS</button>
+  </div>
+  <div class="notice" style="margin-top:10px">
+    Randomising keeps the team names but reshuffles all players. Scores and bonus/forfeit points are reset for the new teams.
+  </div>
+</div>
+
+<div class="card"><div id="playerList" class="empty">Add your first team.</div></div>
+</section>
+
+
+<section id="pubs" class="hidden">
+
+
+<div class="card">
+  <h2>📍 Find pubs & bars near me</h2>
+  <div class="grid">
+    <button id="useLocation" class="btn primary full" type="button">📍 USE MY LOCATION</button>
+<button type="button" class="navBtn" id="drinksParsNav" data-view="drinks">🍺<span>Drinks &amp; Pars</span></button>
+    <input id="placeSearch" class="full" placeholder="Enter a village, town or city">
+    <select id="radius">
+      <option value="1">Within 1 mile</option>
+      <option value="3" selected>Within 3 miles</option>
+      <option value="5">Within 5 miles</option>
+      <option value="10">Within 10 miles</option>
+    </select>
+    <button id="searchPlace" class="btn" type="button">🔎 FIND PUBS</button>
+  </div>
+  <div id="locationStatus" class="notice" style="margin-top:10px">
+    Use your location, or enter a village/town/city. The app will look for pubs and bars in that area.
+  </div>
+  <div id="nearbyList" style="margin-top:10px"></div><div id="directoryCount" class="muted" style="font-size:11px;margin-top:8px"></div><div class="muted" style="font-size:11px;margin-top:8px">Pub directory: Open Pubs dataset (England) • local filtering on your phone.</div>
+</div>
+
+
+<div class="card"><h2>🍻 Pub Course</h2><div class="grid">
+<section id="addPubSection" class="addPubSection">
+  <button type="button" id="toggleAddPub" class="addPubToggle">➕ ADD A PUB</button>
+  <div id="addPubPanel" class="addPubPanel">
+    <input id="pub" placeholder="Pub / hole name"><input id="par" type="number" min="1" value="3" placeholder="Par"><button id="addPub" class="btn primary full">ADD PUB</button>
+  </div>
+</section>
+</div></div>
+<div class="card"><div id="pubCourseListHeading" class="pubCourseListHeading">🍺 YOUR PUB COURSE</div><div class="muted" style="margin:-4px 0 10px;font-size:12px">Drinks and pars are edited together in the section below.</div>
+<div id="pubList" class="empty">Add your pubs in order.</div>
+<div id="drinksParsView" class="drinksParsView"><div id="holeSettingsSection" class="holeSettingsSection">
+  <div class="holeSettingsHeader">
+    <div>
+      <div class="holeSettingsTitle">🍺 DRINKS &amp; PARS</div>
+      <div class="holeSettingsSub">Set the drink and par for each hole in one place.</div>
+    </div>
+  </div>
+  <div id="holeSettingsList"></div>
+</div>
+</div></div>
+</section>
+
+<section id="scores" class="hidden">
+<div class="card"><h2>⛳ Scorecard</h2><div class="notice">Lower score wins. Add penalty points when needed.</div><div id="scorecard"></div></div>
+</section>
+
+<section id="leaderboard" class="hidden">
+<div class="card"><h2>🏆 Live Leaderboard</h2><div id="leaders"></div></div>
+</section>
+
+<section id="settings" class="hidden">
+<div class="card"><h2>⚙️ Pub Golf</h2><button id="reset" class="btn danger">RESET ROUND</button><div class="notice" style="margin-top:12px">This clears the players, pubs and scores saved on this device.</div></div>
+</section>
+</div>
+
+<nav class="nav">
+<button data-p="home" class="on"><span class="icon">🏠</span>Home</button>
+<button data-p="players"><span class="icon">👥</span>Teams</button>
+<button data-p="pubs"><span class="icon">🍻</span>Pubs</button>
+<button data-p="scores"><span class="icon">⛳</span>Scores</button>
+</nav>
+
+<script>
+const KEY="pubGolfV7";
+let s=JSON.parse(localStorage.getItem(KEY)||"null")||{name:"PUB GOLF",teams:[],pubs:[],scores:{}};
+const $=id=>document.getElementById(id);
+const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const LOC="pubGolfDirectoryLocationV8";
+let nearbyResults=[];
+let pubDirectory=null;
+let directoryLoading=null;
+
+function save(){localStorage.setItem(KEY,JSON.stringify(s));render()}
+function page(p){["home","players","pubs","scores","leaderboard","settings"].forEach(x=>$(x).classList.toggle("hidden",x!==p));document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("on",b.dataset.p===p))}
+function total(id){return s.pubs.reduce((n,_,i)=>n+Number(s.scores[id]?.[i]||0),0)}
+function addPub(name,par=3){if(s.pubs.some(p=>p.name.toLowerCase()===name.toLowerCase()))return false;s.pubs.push({id:String(Date.now()+Math.random()),name,par:Math.max(1,Math.min(5,par)),drink:""});save();return true}
+function status(msg){$("locationStatus").innerHTML=msg}
+
+function renderNearby(results=[]){
+ nearbyResults=results;
+ const box=$("nearbyList");
+ if(!results.length){box.innerHTML='<div class="empty">No pubs found. Try a larger radius or another village/town/city.</div>';return}
+ box.innerHTML=results.map((p,i)=>{
+   const added=s.pubs.some(x=>x.name.toLowerCase()===p.name.toLowerCase());
+   return `<div class="geoResult"><div style="min-width:0"><div class="geoName">${esc(p.name)}</div><div class="geoMeta">${esc([p.address,p.location,p.local_authority].filter(Boolean).join(" • "))}${p.distance!=null?` • <span class="geoDistance">${p.distance.toFixed(1)} mi</span>`:""}</div></div><button class="btn small ${added?'':'primary'}" type="button" data-near="${i}" ${added?'disabled':''}>${added?'ADDED':'ADD'}</button></div>`
+ }).join("");
+ box.querySelectorAll("[data-near]").forEach(b=>b.onclick=()=>{const p=nearbyResults[+b.dataset.near];if(p)addPub(p.name,3)});
+}
+
+function miles(lat1,lon1,lat2,lon2){
+  document.getElementById("placeSearch").value=""; document.getElementById("placeSearch").blur();
+
+ const R=3958.7613,r=x=>x*Math.PI/180,dLat=r(lat2-lat1),dLon=r(lon2-lon1);
+ const a=Math.sin(dLat/2)**2+Math.cos(r(lat1))*Math.cos(r(lat2))*Math.sin(dLon/2)**2;
+ return 2*R*Math.asin(Math.sqrt(a));
+}
+
+/*
+ UK-wide directory:
+ GetTheData publishes the Open Pubs dataset with name, address, location,
+ latitude, longitude and local authority. The August 2024 file is open data.
+ We download it once in the browser, parse it locally, and then all filtering
+ happens on-device. This removes the unreliable live Overpass dependency.
+*/
+const PUB_DATA_URL="https://raw.githubusercontent.com/SaneSky109/DATA607/main/Tidyverse/Data/open_pubs.csv";
+
+async function loadPubDirectory(){
+ if(pubDirectory)return pubDirectory;
+ if(directoryLoading)return directoryLoading;
+ directoryLoading=(async()=>{
+   status("📚 <b>Loading pub directory…</b><br><span class=\"muted\">The first load downloads the pub list. After that it can be cached by your phone.</span>");
+   const r=await fetch(PUB_DATA_URL,{mode:"cors",cache:"force-cache"});
+   if(!r.ok)throw new Error("Pub directory download failed: "+r.status);
+   const text=await r.text();
+   if(!text||text.length<1000)throw new Error("Pub directory was empty");
+   pubDirectory=parseCSV(text);
+   if(!pubDirectory.length)throw new Error("No pub records could be read");
+   try{
+     localStorage.setItem("pubGolfDirectoryMeta",JSON.stringify({
+       loaded:Date.now(),count:pubDirectory.length,source:"Open Pubs CSV"
+     }));
+   }catch(e){}
+   return pubDirectory;
+ })().catch(e=>{directoryLoading=null;throw e});
+ return directoryLoading;
+}
+
+function parseCSV(text){
+ const rows=[];let row=[],cell="",quoted=false;
+ for(let i=0;i<text.length;i++){
+   const c=text[i];
+   if(quoted){
+     if(c==='"'&&text[i+1]==='"'){cell+='"';i++}
+     else if(c==='"')quoted=false;
+     else cell+=c;
+   }else{
+     if(c==='"')quoted=true;
+     else if(c===','){row.push(cell);cell=""}
+     else if(c==='\n'){row.push(cell);rows.push(row);row=[];cell=""}
+     else if(c!=='\r')cell+=c;
+   }
+ }
+ if(cell||row.length){row.push(cell);rows.push(row)}
+ if(!rows.length)return[];
+ const head=rows[0].map(x=>x.trim().toLowerCase());
+ const ix=n=>head.indexOf(n);
+ const out=[];
+ for(let i=1;i<rows.length;i++){
+   const r=rows[i],lat=parseFloat(r[ix("latitude")]),lon=parseFloat(r[ix("longitude")]);
+   const name=(r[ix("name")]||"").trim();
+   if(name&&!Number.isNaN(lat)&&!Number.isNaN(lon))
+     out.push({name,address:(r[ix("address")]||"").trim(),location:(r[ix("location")]||"").trim(),local_authority:(r[ix("local_authority")]||"").trim(),lat,lon});
+ }
+ return out;
+}
+
+function resultsNear(lat,lon,radiusMiles,query=""){
+ const q=query.trim().toLowerCase();
+ return pubDirectory
+   .map(p=>({...p,distance:miles(lat,lon,p.lat,p.lon)}))
+   .filter(p=>p.distance<=radiusMiles && (!q||p.name.toLowerCase().includes(q)||p.location.toLowerCase().includes(q)||p.address.toLowerCase().includes(q)||p.local_authority.toLowerCase().includes(q)))
+   .sort((a,b)=>a.distance-b.distance);
+}
+
+async function searchAt(lat,lon,label){
+ const radius=Number($("radius").value||3);
+ try{
+   await loadPubDirectory();
+   const q=$("placeSearch").value.trim();
+   const results=resultsNear(lat,lon,radius,q);
+   localStorage.setItem(LOC,JSON.stringify({lat,lon,label}));
+   if(!results.length){
+     status(`📍 <b>${esc(label)}</b><br><span class="muted">No pubs in the directory within ${radius} miles. Try a larger radius.</span>`);
+     renderNearby([]);
+     return;
+   }
+   renderNearby(results.slice(0,150));
+   status(`📍 <b>${esc(label)}</b><br><span class="muted">Found ${results.length} pubs within ${radius} miles from ${pubDirectory.length.toLocaleString()} loaded pub records.</span>`);
+ }catch(e){
+   console.error(e);
+   status(`⚠️ <b>Couldn't load the UK pub directory.</b><br><span class="muted">Try again, or use a village/town/city search once the directory is available.</span><br><button id="retry" class="btn small" type="button" style="margin-top:8px">TRY AGAIN</button>`);
+   $("retry").onclick=()=>searchAt(lat,lon,label);
+ }
+}
+
+async function useLocation(){
+ if(!navigator.geolocation){status("❌ Location isn't available here. Use a village/town/city.");return}
+ status("📍 <b>Getting your location…</b><br><span class=\"muted\">Allow location access if iPhone asks.</span>");
+ navigator.geolocation.getCurrentPosition(
+  p=>searchAt(p.coords.latitude,p.coords.longitude,"Your current location"),
+  e=>status(`⚠️ <b>Couldn't get your location.</b><br><span class="muted">You can still enter a town or location below.</span>`),
+  {enableHighAccuracy:false,timeout:20000,maximumAge:30000}
+ );
+}
+
+async function geocode(q){
+  const raw=q.trim();
+  if(!raw) throw new Error("Enter a village, town or city");
+  const url="https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=gb&q="+encodeURIComponent(raw);
+  const r=await fetch(url,{cache:"no-store",headers:{"Accept":"application/json"}});
+  if(!r.ok)throw new Error("Location search failed");
+  const d=await r.json();
+  if(!d.length)throw new Error("Village, town or city not found");
+  return {
+    lat:+d[0].lat,
+    lon:+d[0].lon,
+    label:d[0].display_name.split(",").slice(0,3).join(", ")
+  };
+}
+
+$("useLocation").onclick=useLocation;
+$("searchPlace").onclick=async()=>{
+ const q=$("placeSearch").value.trim();if(!q)return;
+ status("🔎 <b>Finding that area…</b>");
+ try{const p=await geocode(q);await searchAt(p.lat,p.lon,p.label)}
+ catch(e){status("❌ Couldn't find that village/town/city. Try Nottingham, Derby or a location such as DE5 3HS.")}
+};
+$("radius").onchange=()=>{
+ const raw=localStorage.getItem(LOC);
+ if(raw){try{const p=JSON.parse(raw);searchAt(p.lat,p.lon,p.label||"Your location")}catch(e){}}
+};
+// Keep the rest of the Pub Golf app unchanged.
+function render(){
+ $("title").textContent=s.name||"PUB GOLF";$("sub").textContent=`${s.teams.length} teams • ${s.pubs.length} pubs`;
+ $("summary").innerHTML=s.teams.length||s.pubs.length?`<b>${esc(s.name)}</b><br><span class="muted">${s.teams.length} teams • ${s.pubs.length} pubs</span>`:"Set up your teams and pubs to get started.";
+ const list=$("playerList");
+ list.innerHTML=s.teams.length?s.teams.map((t,i)=>`<div class="teamCard" data-team-card="${esc(t.id)}">
+   <div class="teamTitleRow">
+     <div>
+       <div class="teamTitle">${i+1}. ${esc(t.name)}</div>
+       <div class="randomInfo">${t.players.length} player${t.players.length===1?"":"s"}</div>
+       <div class="teamNameEdit">
+         <input type="text" maxlength="40" value="${esc(t.name)}" aria-label="Team name" data-team-name-input="${esc(t.id)}">
+         <button class="btn primary" type="button" data-save-team-name="${esc(t.id)}">SAVE NAME</button>
+       </div>
+     </div>
+     <button class="btn small danger" type="button" data-remove-team="${esc(t.id)}">REMOVE TEAM</button>
+   </div>
+   <div class="memberEdit">
+     ${t.players.map((pl,j)=>`<div class="memberRow"><span class="memberName">👤 ${esc(pl)}</span><button class="btn small danger memberRemove" type="button" data-remove-member="${esc(t.id)}:${j}">REMOVE</button></div>`).join("")}
+     <div class="addMemberRow">
+       <input type="text" maxlength="40" placeholder="Add another member…" data-member-input="${esc(t.id)}">
+       <button class="btn primary" type="button" data-add-member="${esc(t.id)}">ADD MEMBER</button>
+     </div>
+   </div>
+ </div>`).join(""):"Add your first team.";
+ list.querySelectorAll("[data-remove-team]").forEach(b=>b.onclick=()=>{
+   const id=b.dataset.removeTeam;
+   if(!confirm("Remove this team and all its players?"))return;
+   s.teams=s.teams.filter(t=>String(t.id)!==String(id));delete s.scores[id];save();
+ });
+ list.querySelectorAll("[data-save-team-name]").forEach(b=>b.onclick=()=>{
+   const id=b.dataset.saveTeamName;
+   const input=list.querySelector(`[data-team-name-input="${CSS.escape(id)}"]`);
+   const name=input?.value.trim();
+   if(!name)return alert("Enter a team name.");
+   const team=s.teams.find(t=>String(t.id)===String(id)); if(!team)return;
+   if(s.teams.some(t=>String(t.id)!==String(id)&&t.name.trim().toLowerCase()===name.toLowerCase())){
+     return alert("That team name is already being used.");
+   }
+   team.name=name;
+   save();
+ });
+ list.querySelectorAll("[data-team-name-input]").forEach(input=>input.addEventListener("keydown",e=>{
+   if(e.key==="Enter") input.closest(".teamCard")?.querySelector("[data-save-team-name]")?.click();
+ }));
+
+ list.querySelectorAll("[data-add-member]").forEach(b=>b.onclick=()=>{
+   const id=b.dataset.addMember, input=list.querySelector(`[data-member-input="${CSS.escape(id)}"]`);
+   const name=input?.value.trim();
+   if(!name)return;
+   const team=s.teams.find(t=>String(t.id)===String(id)); if(!team)return;
+   if(team.players.some(x=>x.toLowerCase()===name.toLowerCase())){alert("That player is already in this team.");return;}
+   const everyone=s.teams.flatMap(t=>t.players);
+   if(everyone.some(x=>x.toLowerCase()===name.toLowerCase())){alert("That player is already in another team.");return;}
+   team.players.push(name);input.value="";save();
+ });
+ list.querySelectorAll("[data-member-input]").forEach(input=>input.addEventListener("keydown",e=>{
+   if(e.key==="Enter") input.closest(".teamCard")?.querySelector("[data-add-member]")?.click();
+ }));
+ list.querySelectorAll("[data-remove-member]").forEach(b=>b.onclick=()=>{
+   const [id,j]=b.dataset.removeMember.split(":");
+   const team=s.teams.find(t=>String(t.id)===String(id));if(!team)return;
+   if(team.players.length<=1){alert("A team needs at least one player.");return;}
+   team.players.splice(+j,1);save();
+ });
+ const pubs=$("pubList");
+ pubs.innerHTML=s.pubs.length?s.pubs.map((p,i)=>`<div class="listRow"><div><div class="name">Hole ${i+1}: ${esc(p.name)}</div><div class="muted">Par ${p.par}</div></div><button class="btn small danger" type="button" data-rb="${p.id}">REMOVE</button></div>`).join(""):"Add your pubs in order.";
+ pubs.querySelectorAll("[data-rb]").forEach(b=>b.onclick=()=>{const idx=s.pubs.findIndex(p=>String(p.id)===String(b.dataset.rb));if(idx<0)return;s.pubs.splice(idx,1);s.teams.forEach(t=>{const old=s.scores[t.id]||{},next={};Object.keys(old).forEach(k=>{const n=+k;if(n<idx)next[n]=old[k];else if(n>idx)next[n-1]=old[k]});s.scores[t.id]=next});save()});
+ renderScores();renderLeaders();
+}
+function renderScores(){
+ const box=$("scorecard");if(!s.teams.length||!s.pubs.length){box.innerHTML='<div class="empty">Add teams and pubs first.</div>';return}
+ box.innerHTML=s.pubs.map((p,i)=>`<div class="hole"><div class="holeTop"><div><div class="holeName">⛳ ${i+1}. ${esc(p.name)}</div>${p.drink?`<div class="drinkOnScore">🍺 ${esc(p.drink)}</div>`:""}</div><div class="par">PAR ${p.par}</div></div>${s.teams.map(t=>{const v=+(s.scores[t.id]?.[i]||0);return`<div class="scoreGrid"><div><b>${esc(t.name)}</b><div class="muted">${esc(t.players.join(" • "))}</div></div><input class="scoreInput" type="number" min="0" value="${v}" data-score="${t.id}:${i}"><div class="scoreBtns"><button class="round" type="button" data-minus="${t.id}:${i}">−</button><button class="round" type="button" data-plus="${t.id}:${i}">+</button></div></div>`}).join("")}</div>`).join("");
+ box.querySelectorAll("[data-score]").forEach(x=>x.onchange=()=>{const[id,i]=x.dataset.score.split(":");s.scores[id]=s.scores[id]||{};s.scores[id][i]=Math.max(0,+x.value||0);save()});
+ box.querySelectorAll("[data-plus]").forEach(x=>x.onclick=()=>{const[id,i]=x.dataset.plus.split(":");s.scores[id]=s.scores[id]||{};s.scores[id][i]=+(s.scores[id][i]||0)+1;save()});
+ box.querySelectorAll("[data-minus]").forEach(x=>x.onclick=()=>{const[id,i]=x.dataset.minus.split(":");s.scores[id]=s.scores[id]||{};s.scores[id][i]=Math.max(0,+(s.scores[id][i]||0)-1);save()});
+}
+function renderLeaders(){const rows=[...s.teams].map(t=>({t,total:total(t.id)})).sort((a,b)=>a.total-b.total);$("leaders").innerHTML=rows.length?rows.map((x,i)=>`<div class="leader"><div style="display:flex;align-items:center"><div class="rank">${i+1}</div><div><div class="name">${esc(x.t.name)}</div><div class="muted">${esc(x.t.players.join(" • "))} • ${s.pubs.length} pubs</div></div></div><div class="total">${x.total}</div></div>`).join(""):'<div class="empty">Add teams to see the leaderboard.</div>'}
+$("create").onclick=()=>{const n=$("event").value.trim();if(n)s.name=n;save();page("players")};
+$("addTeam").onclick=()=>{const n=$("teamName").value.trim(),p1=$("teamP1").value.trim(),p2=$("teamP2").value.trim();if(!n||!p1)return alert("Enter a team name and Player 1.");if(s.teams.some(t=>t.name.toLowerCase()===n.toLowerCase()))return alert("That team already exists.");const t={id:String(Date.now()+Math.random()),name:n,players:[p1,...(p2?[p2]:[])]};s.teams.push(t);s.scores[t.id]={};$("teamName").value="";$("teamP1").value="";$("teamP2").value="";save()};
+$("randomiseTeams").onclick=()=>{
+  if(s.teams.length<2)return alert("Add at least two teams first.");
+  const requested=Math.max(2,Math.min(10,+$("randomTeamCount").value||s.teams.length));
+  const players=s.teams.flatMap(t=>t.players).filter(Boolean);
+  if(requested>players.length)return alert(`You only have ${players.length} players, so you need at least ${requested} players.`);
+  if(!confirm(`Randomise ${players.length} players into ${requested} teams? Current scores and bonus/forfeit points will be reset.`))return;
+
+  for(let i=players.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[players[i],players[j]]=[players[j],players[i]];}
+  const oldNames=s.teams.map(t=>t.name);
+  const names=[];
+  for(let i=0;i<requested;i++) names.push(oldNames[i]||`Team ${i+1}`);
+
+  s.teams=names.map((name,i)=>({
+    id:String(Date.now()+Math.random()+i),
+    name,
+    players:[]
+  }));
+  players.forEach((pl,i)=>s.teams[i%requested].players.push(pl));
+  s.scores={};
+  s.teams.forEach(t=>{s.scores[t.id]={};t.bonus=0;t.forfeit=0;});
+  $("randomTeamCount").value=String(requested);
+  save();
+  alert("🎲 Teams randomised!");
+};
+$("addPub").onclick=()=>{const n=$("pub").value.trim(),p=Math.max(1,Math.min(5,+$("par").value||3));if(!n)return alert("Enter a pub name.");addPub(n,p)};
+document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>page(b.dataset.p));
+$("reset").onclick=()=>{if(confirm("Reset the whole Pub Golf round?")){s={name:"PUB GOLF",teams:[],pubs:[],scores:{}};localStorage.removeItem(KEY);save();page("home")}};
+render();
+</script>
+
+<script>
+document.addEventListener("click", function(e){
+  const btn=e.target.closest("button");
+  if(!btn)return;
+  const txt=(btn.textContent||"").trim().toLowerCase();
+  if(!/\badd\b/.test(txt) || /\badded\b/.test(txt))return;
+
+  const pubRow=btn.closest("#pubList .listRow, #nearbyPubs .listRow, .pubResult, .pub-card");
+  const isPubButton=!!pubRow || btn.dataset.pubId || btn.dataset.rb;
+  if(!isPubButton)return;
+
+  const pubId=btn.dataset.pubId || btn.dataset.rb;
+  const already=(s.pubs||[]).some(p=>String(p.id)===String(pubId) || 
+    (btn.dataset.pubName && String(p.name).toLowerCase()===String(btn.dataset.pubName).toLowerCase()));
+  if(already)return;
+
+  setTimeout(()=>{
+    btn.classList.add("pub-added");
+    btn.dataset.originalText=btn.dataset.originalText || btn.textContent;
+    btn.textContent="✓ ADDED";
+    btn.disabled=true;
+    btn.setAttribute("aria-label","Added to pub course");
+  },50);
+});
+</script>
+
+
+<script>
+const PUB_GOLF_DRINKS = [
+  {cat:"Beer",name:"Pint of lager / beer",par:4},
+  {cat:"Beer",name:"Pint of stout",par:4},
+  {cat:"Beer",name:"Bottle of beer",par:3},
+  {cat:"Beer",name:"Alcohol-free beer",par:4},
+  {cat:"Cider",name:"Pint of cider",par:4},
+  {cat:"Cider",name:"Bottle of cider",par:3},
+  {cat:"Wine",name:"Glass of wine",par:3},
+  {cat:"Wine",name:"Sparkling wine / Prosecco",par:3},
+  {cat:"Spirit",name:"Single spirit + mixer",par:2},
+  {cat:"Spirit",name:"Double spirit + mixer",par:3},
+  {cat:"Cocktail",name:"Cocktail",par:5},
+  {cat:"Shot",name:"Shot",par:1},
+  {cat:"Shot",name:"Double shot",par:2},
+  {cat:"Soft",name:"Soft drink",par:3},
+  {cat:"Soft",name:"Juice",par:2},
+  {cat:"Soft",name:"Mocktail",par:3},
+  {cat:"Soft",name:"Alcohol-free cocktail",par:3},
+  {cat:"Hot",name:"Coffee / tea",par:2},
+  {cat:"Other",name:"Water",par:3}
+];
+
+function drinkOptions(selected){
+  const cats=[...new Set(PUB_GOLF_DRINKS.map(x=>x.cat))];
+  return cats.map(cat=>{
+    const opts=PUB_GOLF_DRINKS.filter(x=>x.cat===cat).map(x=>{
+      const value=x.name.replace(/"/g,'&quot;');
+      return `<option value="${value}" data-par="${x.par}" ${x.name===selected?'selected':''}>${x.name}</option>`;
+    }).join("");
+    return `<optgroup label="${cat}">${opts}</optgroup>`;
+  }).join("");
+}
+
+function buildHoleSettings(){
+  const box=$("holeSettingsList");
+  if(!box)return;
+  if(!s.pubs.length){
+    box.innerHTML='<div class="empty">Add pubs to your course and their drink/par controls will appear here.</div>';
+    return;
+  }
+  box.innerHTML=s.pubs.map((pub,i)=>{
+    const selected=pub.drink||"";
+    const par=Number(pub.par||3);
+    return `<div class="holeEditor" data-hole-editor="${esc(pub.id)}">
+      <div class="holeEditorTop">
+        <div class="holeEditorName">⛳ Hole ${i+1}: ${esc(pub.name)}</div>
+        <div class="holeEditorActions">
+          <div class="holeEditorPar">PAR ${par}</div>
+          <button type="button" class="removeHoleBtn" data-remove-hole="${esc(pub.id)}">REMOVE</button>
+        </div>
+      </div>
+      <div class="holeEditorGrid">
+        <div>
+          <label>DRINK FOR THIS HOLE</label>
+          <select class="drinkSelect">
+            <option value="">Choose a drink…</option>${drinkOptions(selected)}
+          </select>
+          <input class="customDrink" type="text" maxlength="40" placeholder="Or type a custom drink…" value="${selected && !PUB_GOLF_DRINKS.some(x=>x.name===selected)?esc(selected):""}">
+        </div>
+        <div>
+          <label>PAR</label>
+          <div class="parChoices">${[1,2,3,4,5].map(n=>`<button type="button" class="parChoice ${n===par?'on':''}" data-par="${n}">${n}</button>`).join("")}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+
+  box.querySelectorAll("[data-hole-editor]").forEach(editor=>{
+    const pub=s.pubs.find(p=>String(p.id)===String(editor.dataset.holeEditor));
+    if(!pub)return;
+    const select=editor.querySelector(".drinkSelect");
+    const custom=editor.querySelector(".customDrink");
+
+    select.onchange=()=>{
+      const name=select.value;
+      if(!name)return;
+      pub.drink=name;
+      const option=select.options[select.selectedIndex];
+      pub.par=Math.max(1,Math.min(5,Number(option.dataset.par||pub.par||3)));
+      custom.value="";
+      save();
+    };
+
+    custom.onchange=()=>{
+      const name=custom.value.trim();
+      if(name){pub.drink=name;save();}
+    };
+
+    editor.querySelectorAll(".parChoice").forEach(btn=>btn.onclick=()=>{
+      pub.par=Math.max(1,Math.min(5,+btn.dataset.par));
+      save();
+    });
+  });
+}
+
+function attachDrinkEditors(){
+  buildHoleSettings();
+}
+const _renderOriginal=render;
+render=function(){
+  _renderOriginal();
+  attachDrinkEditors();
+};
+</script>
+
+
+<script>
+(function(){
+  function setDrinksView(show){
+    const view=document.getElementById("drinksParsView");
+    if(!view)return;
+    const main=document.querySelector("main");
+    const pubsView=document.getElementById("pubsView") ||
+      document.querySelector('[data-view="pubs"]')?.closest("section");
+    view.classList.toggle("active",show);
+    document.getElementById("drinksParsNav")?.classList.toggle("active",show);
+
+    if(show){
+      document.querySelectorAll(".pubCourseView,.pubsView").forEach(x=>x.classList.add("navHidden"));
+      document.querySelectorAll("#pubCourseListHeading,#pubList").forEach(x=>x.classList.add("navHidden"));
+      view.scrollIntoView({behavior:"smooth",block:"start"});
+    }else{
+      document.querySelectorAll(".pubCourseView,.pubsView").forEach(x=>x.classList.remove("navHidden"));
+      document.querySelectorAll("#pubCourseListHeading,#pubList").forEach(x=>x.classList.remove("navHidden"));
+    }
+  }
+
+  document.addEventListener("click",function(e){
+    const btn=e.target.closest("#drinksParsNav");
+    if(!btn)return;
+    e.preventDefault();
+    setDrinksView(true);
+  });
+
+  // A Pubs nav click returns to the normal pub course.
+  document.addEventListener("click",function(e){
+    const btn=e.target.closest("button");
+    if(!btn || btn.id==="drinksParsNav")return;
+    const t=(btn.textContent||"").trim().toLowerCase();
+    if(t==="🍺 pubs" || t.includes("pubs")){
+      if(!t.includes("drink")) setDrinksView(false);
+    }
+  });
+})();
+</script>
+
+
+<script>
+(function(){
+  function resetPubAddedStates(){
+    document.querySelectorAll('button').forEach(btn=>{
+      if((btn.dataset.originalText||"").trim()){
+        btn.disabled=false;
+        btn.textContent=btn.dataset.originalText;
+        delete btn.dataset.originalText;
+        btn.classList.remove("pub-added");
+        btn.removeAttribute("aria-label");
+      }
+    });
+  }
+
+  document.addEventListener("click",function(e){
+    const btn=e.target.closest("[data-remove-hole]");
+    if(!btn)return;
+    const id=String(btn.dataset.removeHole);
+    const pub=(s.pubs||[]).find(p=>String(p.id)===id);
+    if(!pub)return;
+
+    s.pubs=s.pubs.filter(p=>String(p.id)!==id);
+
+    // If the app tracks added pub IDs, clear this one too so it can be added again.
+    if(Array.isArray(s.addedPubIds)){
+      s.addedPubIds=s.addedPubIds.filter(x=>String(x)!==id);
+    }
+    if(Array.isArray(s.addedPubs)){
+      s.addedPubs=s.addedPubs.filter(x=>String(x)!==id);
+    }
+
+    save();
+    resetPubAddedStates();
+  });
+})();
+</script>
+
+
+<script>
+(function(){
+  function escx(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
+  function ensure(){
+    (s.teams||[]).forEach(t=>{
+      if(typeof t.bonus!=="number")t.bonus=0;
+      if(typeof t.forfeit!=="number")t.forfeit=0;
+    });
+  }
+  function total(t){
+    let base=0, r=s.scores&&s.scores[t.id];
+    (s.pubs||[]).forEach((_,i)=>base+=Number(r&&r[i]||0));
+    return {base,bonus:Number(t.bonus||0),forfeit:Number(t.forfeit||0),total:base+Number(t.bonus||0)+Number(t.forfeit||0)};
+  }
+  function render(){
+    ensure();
+    let host=document.getElementById("scoreExtrasPanel");
+    if(!host){
+      host=document.createElement("section");
+      host.id="scoreExtrasPanel";
+      host.className="scoreExtras";
+      document.querySelector("main")?.appendChild(host);
+    }
+    const rows=(s.teams||[]).map(t=>({t,x:total(t)})).sort((a,b)=>a.x.total-b.x.total);
+    host.innerHTML="<h3>🏆 FINAL TALLY</h3><div style='color:#d8c09a;margin-bottom:10px'>Lower total wins. Add bonus or forfeit points below.</div>"+
+      rows.map(({t,x})=>`<div class="extraTeam" data-team="${escx(t.id)}">
+        <div class="extraName">${escx(t.name)} — current total: <span class="extraValue">${x.total}</span></div>
+        <div class="extraBtns">
+          <button data-act="bonusMinus">− Bonus <span>${x.bonus}</span></button>
+          <button data-act="bonusPlus">+ Bonus <span>${x.bonus}</span></button>
+          <button data-act="forfeitPlus">+ Forfeit <span>${x.forfeit}</span></button>
+          <button data-act="forfeitMinus">− Forfeit <span>${x.forfeit}</span></button>
+        </div>
+      </div>`).join("")+
+      "<h3 style='margin-top:14px'>🏁 RESULTS</h3>"+
+      rows.map(({t,x},i)=>`<div class="finalRow"><span>${i+1}. ${escx(t.name)}</span><span>${x.total} pts</span></div>`).join("");
+    host.querySelectorAll("[data-act]").forEach(b=>b.onclick=()=>{
+      const team=(s.teams||[]).find(t=>String(t.id)===String(b.parentElement.parentElement.dataset.team));
+      if(!team)return;
+      ensure();
+      const a=b.dataset.act;
+      if(a==="bonusPlus")team.bonus++;
+      if(a==="bonusMinus")team.bonus=Math.max(0,team.bonus-1);
+      if(a==="forfeitPlus")team.forfeit--;
+      if(a==="forfeitMinus")team.forfeit=Math.min(0,team.forfeit+1);
+      save(); render();
+    });
+  }
+  window.renderScoreExtras=render;
+  setTimeout(render,200);
+})();
+</script>
+
+
+<style>
+.pub-added{background:#3fb95a!important;border-color:#23833a!important;color:#fff!important;opacity:1!important}
+</style>
+<script>
+(function(){
+  function getPub(btn){
+    var id=btn.dataset.pubId||btn.dataset.id, name=btn.dataset.pubName;
+    var raw=btn.dataset.pub||btn.dataset.pubData;
+    if(raw){try{return JSON.parse(raw)}catch(e){}}
+    if(window.nearbyPubs){
+      for(var i=0;i<window.nearbyPubs.length;i++){
+        var p=window.nearbyPubs[i];
+        if((id && String(p.id)===String(id)) || (name && String(p.name).toLowerCase()===String(name).toLowerCase())) return p;
+      }
+    }
+    return null;
+  }
+  function same(a,b){
+    return a&&b&&(
+      (a.id!=null&&b.id!=null&&String(a.id)===String(b.id)) ||
+      String(a.name||"").trim().toLowerCase()===String(b.name||"").trim().toLowerCase()
+    );
+  }
+  function mark(btn,yes){
+    btn.textContent=yes?"✓ ADDED":"ADD";
+    btn.disabled=!!yes;
+    btn.classList.toggle("pub-added",!!yes);
+  }
+  function sync(){
+    document.querySelectorAll("button").forEach(function(btn){
+      var t=(btn.textContent||"").trim().toLowerCase();
+      if(t!=="add"&&t!=="added"&&t!=="✓ added") return;
+      var p=getPub(btn);
+      if(p) mark(btn,(s.pubs||[]).some(function(x){return same(x,p)}));
+    });
+  }
+  document.addEventListener("click",function(e){
+    var btn=e.target.closest("button");
+    if(!btn)return;
+    var t=(btn.textContent||"").trim().toLowerCase();
+    if(t!=="add")return;
+    var p=getPub(btn);
+    if(!p)return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    if(!(s.pubs||[]).some(function(x){return same(x,p)})){
+      s.pubs=s.pubs||[];
+      var copy=Object.assign({},p);
+      if(!copy.id)copy.id="pub-"+Date.now()+"-"+Math.random().toString(36).slice(2);
+      if(copy.par==null)copy.par=3;
+      if(copy.drink==null)copy.drink="";
+      s.pubs.push(copy);
+      save();
+    }
+    mark(btn,true);
+    setTimeout(sync,50);
+  },true);
+  window.syncPubAddButtons=sync;
+  setTimeout(sync,100);
+  setTimeout(sync,500);
+})();
+</script>
+
+
+<script>
+(function(){
+  const originalRender=window.render;
+  // The app render is already defined in the main script; this lightweight
+  // observer keeps the selector aligned without replacing the render function.
+  function syncTeamCount(){
+    const sel=document.getElementById("randomTeamCount");
+    if(!sel)return;
+    const n=Math.min(10,Math.max(2,(s.teams||[]).length));
+    if((s.teams||[]).length>=2)sel.value=String(n);
+  }
+  setTimeout(syncTeamCount,100);
+  setTimeout(syncTeamCount,500);
+})();
+</script>
+</body></html>
