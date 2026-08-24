@@ -1,0 +1,58 @@
+<!doctype html><html><head>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>League Tournament</title>
+<style>
+:root{--bg:#17100a;--p:#2a1a0d;--p2:#3a2410;--line:#8a5a22;--t:#fff7e6;--m:#d2b98f;--a:#f2b233;--g:#76c893;--r:#d96b55}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--t);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding-bottom:85px}.app{max-width:760px;margin:auto;padding:18px 15px}.head{text-align:center;padding:15px 4px}.kick{color:var(--a);font-weight:900;letter-spacing:4px;font-size:12px}h1{font-size:38px;line-height:1;margin:8px 0}.sub,.muted{color:var(--m)}.card{background:var(--p);border:1px solid var(--line);border-radius:21px;padding:17px;margin:13px 0}.card h2{margin:0 0 14px;font-size:20px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.full{grid-column:1/-1}input,select{width:100%;min-height:49px;background:#061624;border:1px solid var(--line);border-radius:13px;color:var(--t);padding:10px 12px}.btn{min-height:49px;border:1px solid var(--line);border-radius:14px;background:var(--p2);color:var(--t);font-weight:900;padding:9px 12px}.primary{background:var(--a);color:#2a1805;border-color:var(--a)}.danger{background:#3b1921;border-color:#773640;color:#ffdfe2}.small{min-height:39px;font-size:13px}.table{overflow:auto}table{width:100%;min-width:590px;border-collapse:collapse}th,td{text-align:left;padding:10px 8px;border-bottom:1px solid #214a61}th{font-size:11px;color:var(--m)}td{font-weight:750}.rank,.pts{color:var(--a);font-weight:950}.team{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid #214a61}.team:last-child{border:0}.tn{font-weight:900}.players{font-size:13px;color:var(--m);margin-top:3px}.badge{border:1px solid var(--line);border-radius:99px;padding:5px 9px;color:var(--m);font-size:12px;font-weight:850}.match{display:grid;grid-template-columns:1fr 45px 1fr;gap:8px;align-items:center}.vs{text-align:center;color:var(--m);font-weight:900}.wgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.scorebox{display:flex;justify-content:center;align-items:center;gap:12px;margin:10px 0}.score{font-size:44px;font-weight:950;min-width:60px;text-align:center}.round{width:47px;height:47px;border-radius:50%;border:1px solid var(--line);background:var(--p2);color:var(--t);font-size:25px;font-weight:900}.nav{position:fixed;z-index:10;left:0;right:0;bottom:0;background:#061522;border-top:1px solid var(--line);padding:8px 8px calc(8px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(4,1fr);gap:5px}.nav button{border:0;background:transparent;color:var(--m);font-weight:850;padding:7px 2px;border-radius:12px}.nav button.on{color:var(--a);background:#0b2639}.icon{display:block;font-size:18px}.empty{text-align:center;color:var(--m);padding:18px}.hidden{display:none!important}.modal{position:fixed;inset:0;z-index:50;background:#000a;display:flex;align-items:flex-end}.modal>div{width:min(760px,100%);background:var(--p);border:1px solid var(--line);border-radius:22px 22px 0 0;padding:16px}
+@media(max-width:560px){.grid,.wgrid{grid-template-columns:1fr}.match{grid-template-columns:1fr}.vs{display:none}h1{font-size:34px}}
+
+/* Beer-inspired pub palette */
+.head{background:linear-gradient(180deg,rgba(242,178,51,.10),transparent 78%);border-radius:20px}
+.kick{color:#f2b233}
+.card{box-shadow:0 12px 30px rgba(0,0,0,.35)}
+.btn.primary{box-shadow:0 5px 16px rgba(242,178,51,.18)}
+.badge{border-color:#8a5a22}
+.nav{background:rgba(23,16,10,.97);border-top-color:#8a5a22}
+.nav button.on{color:#f2b233;background:rgba(242,178,51,.10)}
+.score{color:#f2b233}
+.rank,.pts{color:#f2b233}
+.notice{border-color:#6f491d;background:#24160b}
+
+</style></head><body><div class="app">
+<header class="head"><div class="kick">🍺 TOURNAMENT MANAGER 🍺</div><h1 id="title">🍺 League Tournament</h1><div id="sub" class="sub">Create a tournament and keep rankings live.</div></header>
+
+<section id="home"><div class="card"><h2>🏆 Create tournament</h2><div class="grid"><input id="tour" class="full" placeholder="Tournament name"><button id="create" class="btn primary full">CREATE TOURNAMENT</button></div></div><div class="card"><h2>📋 Current tournament</h2><div id="summary" class="empty">No tournament created yet.</div></div></section>
+
+<section id="teams" class="hidden"><div class="card"><h2>👥 Teams</h2><div class="grid"><input id="team" placeholder="Team name"><input id="p1" placeholder="Player 1"><input id="p2" placeholder="Player 2 (optional)"><button id="add" class="btn primary">ADD TEAM</button></div></div><div class="card"><div id="teamList" class="empty">Add your first team.</div></div></section>
+
+<section id="table" class="hidden"><div class="card"><h2>🏆 Live league table</h2><div class="table"><table><thead><tr><th>#</th><th>Team</th><th>Players</th><th>Played</th><th>Wins</th><th>Losses</th><th>Points</th></tr></thead><tbody id="tbody"></tbody></table></div></div></section>
+
+<section id="matches" class="hidden"><div class="card"><h2>⚔️ Record match</h2><div class="match"><select id="a"></select><div class="vs">VS</div><select id="b"></select></div><div class="wgrid"><button id="wa" class="btn">TEAM A WINS</button><button id="wb" class="btn">TEAM B WINS</button></div></div><div class="card"><h2>🔢 Score counter</h2><div class="match"><div><div id="na" class="badge">Team A</div><div class="scorebox"><button class="round" data-k="a" data-d="-1">−</button><div id="sa" class="score">0</div><button class="round" data-k="a" data-d="1">+</button></div></div><div class="vs">:</div><div><div id="nb" class="badge">Team B</div><div class="scorebox"><button class="round" data-k="b" data-d="-1">−</button><div id="sb" class="score">0</div><button class="round" data-k="b" data-d="1">+</button></div></div></div></div><div class="card"><h2>🕘 Recent matches</h2><div id="history" class="empty">No matches recorded.</div></div></section>
+
+<section id="settings" class="hidden"><div class="card"><h2>⚙️ Tournament</h2><button id="reset" class="btn danger">RESET TOURNAMENT</button><p class="muted">Clears this tournament, teams, results and scores from this device.</p></div></section>
+</div>
+<nav class="nav"><button data-p="home" class="on"><span class="icon">🏠</span>Home</button><button data-p="teams"><span class="icon">👥</span>Teams</button><button data-p="table"><span class="icon">🏆</span>Table</button><button data-p="matches"><span class="icon">⚔️</span>Matches</button></nav>
+<script>
+const K="leagueTournamentV1";let s=JSON.parse(localStorage.getItem(K)||"null")||{name:"League Tournament",teams:[],matches:[],score:{a:0,b:0}};
+const $=id=>document.getElementById(id),save=()=>{localStorage.setItem(K,JSON.stringify(s));render()},esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function stats(t){let m=s.matches.filter(x=>x.a===t.id||x.b===t.id),w=m.filter(x=>x.winner===t.id).length;return{p:m.length,w,l:m.length-w,pts:w*3}}
+function ranked(){return s.teams.map(t=>({...t,st:stats(t)})).sort((x,y)=>y.st.pts-x.st.pts||y.st.w-x.st.w||x.name.localeCompare(y.name))}
+function page(p){["home","teams","table","matches","settings"].forEach(x=>$(x).classList.toggle("hidden",x!==p));document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("on",b.dataset.p===p))}
+function render(){
+ $("title").textContent=s.name;$("sub").textContent=s.teams.length?`${s.teams.length} teams • ${s.matches.length} matches`:"Create a tournament and keep rankings live.";
+ $("summary").innerHTML=s.teams.length?`<strong>${esc(s.name)}</strong><br><span class="muted">${s.teams.length} teams • ${s.matches.length} matches played</span>`:"No tournament created yet.";
+ $("teamList").innerHTML=s.teams.length?s.teams.map(t=>`<div class="team"><div><div class="tn">${esc(t.name)}</div><div class="players">${esc(t.players.join(" • "))}</div></div><button class="btn small danger" data-x="${t.id}">REMOVE</button></div>`).join(""):"Add your first team.";
+ $("teamList").querySelectorAll("[data-x]").forEach(b=>b.onclick=()=>{s.teams=s.teams.filter(t=>t.id!==b.dataset.x);s.matches=s.matches.filter(m=>m.a!==b.dataset.x&&m.b!==b.dataset.x);save()});
+ $("tbody").innerHTML=ranked().map((t,i)=>`<tr><td class="rank">${i+1}</td><td>${esc(t.name)}</td><td>${esc(t.players.join(" • "))}</td><td>${t.st.p}</td><td>${t.st.w}</td><td>${t.st.l}</td><td class="pts">${t.st.pts}</td></tr>`).join("")||`<tr><td colspan="7" class="empty">Add teams first.</td></tr>`;
+ let av=$("a").value,bv=$("b").value,opts='<option value="">Select team</option>'+s.teams.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join("");$("a").innerHTML=opts;$("b").innerHTML=opts;$("a").value=s.teams.some(t=>t.id===av)?av:"";$("b").value=s.teams.some(t=>t.id===bv)?bv:"";let ta=s.teams.find(t=>t.id===$("a").value),tb=s.teams.find(t=>t.id===$("b").value);$("na").textContent=ta?.name||"Team A";$("nb").textContent=tb?.name||"Team B";$("wa").textContent=ta?ta.name.toUpperCase()+" WINS":"TEAM A WINS";$("wb").textContent=tb?tb.name.toUpperCase()+" WINS":"TEAM B WINS";$("sa").textContent=s.score.a;$("sb").textContent=s.score.b;
+ $("history").innerHTML=s.matches.slice().reverse().slice(0,10).map(m=>{let x=s.teams.find(t=>t.id===m.a),y=s.teams.find(t=>t.id===m.b),w=s.teams.find(t=>t.id===m.winner);return`<div class="team"><div><b>${esc(x?.name||"Team")} vs ${esc(y?.name||"Team")}</b><div class="players">${esc(w?.name||"")} won • ${m.sa}–${m.sb}</div></div></div>`}).join("")||"No matches recorded.";
+}
+$("create").onclick=()=>{let n=$("tour").value.trim();if(n)s.name=n;save();page("teams")};
+$("add").onclick=()=>{let n=$("team").value.trim(),p1=$("p1").value.trim(),p2=$("p2").value.trim();if(!n||!p1)return alert("Enter a team name and Player 1.");if(s.teams.some(t=>t.name.toLowerCase()===n.toLowerCase()))return alert("That team already exists.");s.teams.push({id:Date.now()+Math.random(),name:n,players:[p1,...(p2?[p2]:[])]});$("team").value=$("p1").value=$("p2").value="";save()};
+function win(k){let a=$("a").value,b=$("b").value;if(!a||!b||a===b)return alert("Select two different teams.");s.matches.push({a,b,winner:k==="a"?a:b,sa:s.score.a,sb:s.score.b});s.score={a:0,b:0};save();page("table")}
+$("wa").onclick=()=>win("a");$("wb").onclick=()=>win("b");$("a").onchange=render;$("b").onchange=render;
+document.querySelectorAll("[data-score]").forEach(x=>x.onclick=()=>{s.score[x.dataset.k]=Math.max(0,s.score[x.dataset.k]+Number(x.dataset.d));render()});
+document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>page(b.dataset.p));
+$("reset").onclick=()=>{if(confirm("Reset the whole tournament?")){s={name:"League Tournament",teams:[],matches:[],score:{a:0,b:0}};save();page("home")}};
+render();
+</script></body></html>
